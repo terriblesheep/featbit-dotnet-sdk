@@ -15,6 +15,24 @@ namespace FeatBit.Sdk.Server.Evaluation
             _store = store;
         }
 
+
+        public (EvalResult evalResult, EvalEvent evalEvent) Fetch(string flagKey, string variationId)
+        {
+            var storeKey = StoreKeys.ForFeatureFlag(flagKey);
+
+            var flag = _store.Get<FeatureFlag>(storeKey);
+            if (flag == null)
+            {
+                return FlagNotFound();
+            }
+            var variation = flag.GetVariation(variationId);
+            if (variation == null)
+            {
+                return (EvalResult.VariationNotFound, null);
+            }
+            return (EvalResult.Targeted(variation), null);
+        }
+
         public (EvalResult evalResult, EvalEvent evalEvent) Evaluate(EvaluationContext context)
         {
             var storeKey = StoreKeys.ForFeatureFlag(context.FlagKey);
@@ -26,9 +44,9 @@ namespace FeatBit.Sdk.Server.Evaluation
             }
 
             return Evaluate(flag, context.FbUser);
-
-            (EvalResult evalResult, EvalEvent evalEvent) FlagNotFound() => (EvalResult.FlagNotFound, null);
         }
+
+        (EvalResult evalResult, EvalEvent evalEvent) FlagNotFound() => (EvalResult.FlagNotFound, null);
 
         public (EvalResult evalResult, EvalEvent evalEvent) Evaluate(FeatureFlag flag, FbUser user)
         {

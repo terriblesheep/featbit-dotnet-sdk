@@ -24,6 +24,9 @@ namespace FeatBit.Sdk.Server.Evaluation
         // variation. 
         public static readonly EvalResult MalformedFlag = new(ReasonKind.Error, "malformed flag", Variation.Empty);
 
+        //Indicates that the flag does not contain the variation with the specified ID
+        public static readonly EvalResult VariationNotFound = new(ReasonKind.Error, "variation not found", Variation.Empty);
+
         public static EvalResult FlagOff(Variation variation)
         {
             return new EvalResult(ReasonKind.Off, "flag off", variation);

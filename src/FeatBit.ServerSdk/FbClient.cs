@@ -256,6 +256,71 @@ namespace FeatBit.Sdk.Server
             return results;
         }
 
+
+        public bool BoolVariation(string key, string variationId, out bool success)
+          => FetchCore(key, variationId, ValueConverters.Bool, out success).Value;
+
+        /// <inheritdoc/>
+        public EvalDetail<bool> BoolVariationDetail(string key, string variationId, out bool success)
+            => FetchCore(key, variationId, ValueConverters.Bool, out success);
+
+        /// <inheritdoc/>
+        public int IntVariation(string key, string variationId, out bool success)
+            => FetchCore(key, variationId, ValueConverters.Int, out success).Value;
+
+        /// <inheritdoc/>
+        public EvalDetail<int> IntVariationDetail(string key, string variationId, out bool success)
+            => FetchCore(key, variationId, ValueConverters.Int, out success);
+
+        /// <inheritdoc/>
+        public float FloatVariation(string key, string variationId, out bool success)
+            => FetchCore(key, variationId, ValueConverters.Float, out success).Value;
+
+        /// <inheritdoc/>
+        public EvalDetail<float> FloatVariationDetail(string key, string variationId, out bool success)
+            => FetchCore(key, variationId, ValueConverters.Float, out success);
+
+        /// <inheritdoc/>
+        public double DoubleVariation(string key, string variationId, out bool success)
+            => FetchCore(key, variationId, ValueConverters.Double, out success).Value;
+
+        /// <inheritdoc/>
+        public EvalDetail<double> DoubleVariationDetail(string key, string variationId, out bool success)
+            => FetchCore(key, variationId, ValueConverters.Double, out success);
+
+        /// <inheritdoc/>
+        public string StringVariation(string key, string variationId, out bool success)
+            => FetchCore(key, variationId, ValueConverters.String, out success).Value;
+
+        private EvalDetail<TValue> FetchCore<TValue>(string key, string variationId, ValueConverter<TValue> converter, out bool success)
+        {
+            success = false;
+            if (!Initialized)
+            {
+                // Flag evaluation before client initialized; always returning default value
+                return new EvalDetail<TValue>(key, ReasonKind.ClientNotReady, "client not ready", default, string.Empty);
+            }
+
+            var(evalResult, evalEvent) = _evaluator.Fetch(key, variationId);
+            if (evalResult.Kind == ReasonKind.Error)
+            {
+                // error happened when fetch flag variation, return default value 
+                return new EvalDetail<TValue>(key, evalResult.Kind, evalResult.Reason, default, string.Empty);
+            }
+
+            var variation = evalResult.Variation;
+            if (converter(variation.Value, out var typedValue))
+            {
+                success = true;
+                return new EvalDetail<TValue>(key, evalResult.Kind, evalResult.Reason, typedValue, variation.Id);
+            }
+            else
+            {       
+                // type mismatch, return default value
+                return new EvalDetail<TValue>(key, ReasonKind.WrongType, "type mismatch", default, string.Empty);
+            }
+        }
+
         /// <inheritdoc/>
         public void Track(FbUser user, string eventName) => Track(user, eventName, 1.0d);
 

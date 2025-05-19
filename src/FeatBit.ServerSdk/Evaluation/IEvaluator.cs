@@ -8,5 +8,7 @@ namespace FeatBit.Sdk.Server.Evaluation
         (EvalResult evalResult, EvalEvent evalEvent) Evaluate(EvaluationContext context);
 
         (EvalResult evalResult, EvalEvent evalEvent) Evaluate(FeatureFlag flag, FbUser user);
+
+        (EvalResult evalResult, EvalEvent evalEvent) Fetch(string flagKey, string variationId);
     }
 }
